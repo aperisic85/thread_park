@@ -1,0 +1,28 @@
+use std::{collections::VecDeque, sync::Mutex, thread, time::Duration};
+
+fn main() {
+    let queue: Mutex<VecDeque<u32>> = Mutex::new(VecDeque::new());
+
+    thread::scope(|s| {
+    // Consuming thread
+        let t = s.spawn(|| loop {
+            let item  = queue.lock().unwrap().pop_front();
+            if let Some(item) = item {
+                dbg!(item);
+            }
+            else {
+                thread::park();
+                println!("parking...");
+            }
+        });
+    //producing thread
+        for i in 0.. {
+            queue.lock().unwrap().push_back(i);
+            t.thread().unpark();
+            thread::sleep(Duration::from_secs(1));
+            
+        }
+    });
+
+       
+}
